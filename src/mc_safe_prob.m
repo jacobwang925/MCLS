@@ -16,7 +16,7 @@ for loop_count = 1:loop_num
     x = zeros(Nt,1);
     x(1) = x_t;
     for i = 1:(Nt-1)
-        x(i+1) = exp((A-K)*dt) * x(i) + (exp(2*(A-K)*dt)-1)/(2*(A-K))*randn*sigma;
+        x(i+1) = exp((A-K)*dt) * x(i) + randn*sigma;
         if x(i+1) <= bnd % unsafe condition
             first_exit_time(loop_count) = i+1;
             break

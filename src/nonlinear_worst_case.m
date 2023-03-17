@@ -4,14 +4,15 @@ dt = 0.1; % time step size
 traj_num = 50;
 dx = 0.1; % state step size (for derivative calculations)
 eps = 0.1; % epsilon
-% eps = 0.3;
 K = 2.5; % proportional controller gain
 A = 2; % A matrix in system dynamics
 K_trap = 5; % trapping nonlinear dynamics equivalent gain
-sigma = 2; % magnitude of noise
+sigma = 1; % magnitude of noise
 h = 10; % safe prob time horizon
 x_0 = 3; % initial state
 bnd = 1.5; % system dynamics switching boundary
+
+sigma = sigma * sqrt(dt); % discretization
 
 %% our controller
 x = zeros(Nt, traj_num); % initialization
@@ -23,17 +24,17 @@ alpha = 1;
 for j = 1:traj_num
     for i = 1:Nt
         if x(i, j) > bnd
-            P = mc_safe_prob_3(x(i, j), h, sigma);
-            P_dx1 = mc_safe_prob_3(x(i, j)+dx, h, sigma);
-            P_dx2 = mc_safe_prob_3(x(i, j)-dx, h, sigma);
+            P = mc_safe_prob_nonlinear(x(i, j), h, sigma);
+            P_dx1 = mc_safe_prob_nonlinear(x(i, j)+dx, h, sigma);
+            P_dx2 = mc_safe_prob_nonlinear(x(i, j)-dx, h, sigma);
             dP_x = (P_dx1 - P_dx2) / (2*dx); % gradient
             if abs(dP_x) < 0.05
                 dP_x = 0.05;
             end
             u = (-alpha * (P - (1-eps))) / dP_x - A*x(i, j);
-            x(i+1, j) = exp((A)*dt) * x(i, j) + (exp(2*(A)*dt)-1)/(2*A)*randn*sigma + u*(exp(A*dt)-1)/A; % zero-hold control
+            x(i+1, j) = exp((A)*dt) * x(i, j) + randn*sigma + u*(exp(A*dt)-1)/A; % zero-hold control
         else
-            x(i+1, j) = exp((A-K_trap)*dt) * x(i, j) + (exp(2*(A-K_trap)*dt)-1)/(2*(A-K_trap))*randn*sigma; % uncontrollable dynamics
+            x(i+1, j) = exp((A-K_trap)*dt) * x(i, j) + randn*sigma; % uncontrollable dynamics
         end
     end
 end
@@ -49,9 +50,9 @@ F_r = zeros(Nt, 1); % to store expected value of safe probability
 for j = 1:traj_num
     for i = 1:Nt
         if x_r(i, j) > bnd
-            x_r(i+1, j) = exp((A-K)*dt) * x_r(i, j) + (exp(2*(A-K)*dt)-1)/(2*(A-K))*randn*sigma; % nominal controller
+            x_r(i+1, j) = exp((A-K)*dt) * x_r(i, j) + randn*sigma; % nominal controller
         else
-            x_r(i+1, j) = exp((A-K_trap)*dt) * x_r(i, j) + (exp(2*(A-K_trap)*dt)-1)/(2*(A-K_trap))*randn*sigma; % uncontrollable dynamics
+            x_r(i+1, j) = exp((A-K_trap)*dt) * x_r(i, j) + randn*sigma; % uncontrollable dynamics
         end
     end
 end
@@ -70,9 +71,9 @@ for j = 1:traj_num
     for i = 1:Nt
         if x_clark(i, j) > bnd
             u = ((-alpha*dt + 1 - exp(A*dt)) * x_clark(i, j) + alpha*dt) * A / (exp(A*dt)-1);
-            x_clark(i+1, j) = exp((A)*dt) * x_clark(i, j) + (exp(2*(A)*dt)-1)/(2*A)*randn*sigma + u*(exp(A*dt)-1)/A; % zero-hold control
+            x_clark(i+1, j) = exp((A)*dt) * x_clark(i, j) + randn*sigma + u*(exp(A*dt)-1)/A; % zero-hold control
         else
-            x_clark(i+1, j) = exp((A-K_trap)*dt) * x_clark(i, j) + (exp(2*(A-K_trap)*dt)-1)/(2*(A-K_trap))*randn*sigma; % uncontrollable dynamics
+            x_clark(i+1, j) = exp((A-K_trap)*dt) * x_clark(i, j) + randn*sigma; % uncontrollable dynamics
         end
     end
 end
@@ -86,14 +87,9 @@ x_cvar(1, :) = x_0;
 u_cvar = zeros(Nt, traj_num);
 F_cvar = zeros(Nt, 1); % to store expected value of safe probability
 
-beta_risk = 0.03;
 beta_risk = 0.1;
-% beta_risk = 0.6;
 sigma_risk = sqrt(dt);
-alpha_risk = 0.5;
 alpha_risk = 0.65;
-% alpha_risk = 0.7;
-% alpha_risk = 0.8;
 
 epsilon = norminv(beta_risk, 0, sigma_risk);
 l_risk = quadgk(@(x) x.*normpdf(x, 0, sigma_risk), -inf, epsilon)/normcdf(epsilon, 0, sigma_risk); % expectation of h(x) given h(x) < epsilon
@@ -103,9 +99,9 @@ for j = 1:traj_num
     for i = 1:Nt
         if x_cvar(i, j) > bnd
             u_cvar(i, j) = ((alpha_risk - exp((A)*dt)) * x_cvar(i, j) - l_risk) * A / (exp(A*dt)-1);
-            x_cvar(i+1, j) = exp((A)*dt) * x_cvar(i, j) + (exp(2*(A)*dt)-1)/(2*A)*randn*sigma + u_cvar(i, j)*(exp(A*dt)-1)/A; % zero-hold control
+            x_cvar(i+1, j) = exp((A)*dt) * x_cvar(i, j) + randn*sigma + u_cvar(i, j)*(exp(A*dt)-1)/A; % zero-hold control
         else
-            x_cvar(i+1, j) = exp((A-K_trap)*dt) * x_cvar(i, j) + (exp(2*(A-K_trap)*dt)-1)/(2*(A-K_trap))*randn*sigma; % uncontrollable dynamics
+            x_cvar(i+1, j) = exp((A-K_trap)*dt) * x_cvar(i, j) + randn*sigma; % uncontrollable dynamics
         end
     end
 end
@@ -128,9 +124,9 @@ for j = 1:traj_num
     for i = 1:Nt
         if x_prsbc(i, j) > bnd
             u_prsbc(i, j) = ((- alpha_risk * x_prsbc(i, j) - l_risk + alpha_risk) * dt + x_prsbc(i, j) - exp((A)*dt) * x_prsbc(i, j)) * A / (exp(A*dt)-1);
-            x_prsbc(i+1, j) = exp((A)*dt) * x_prsbc(i, j) + (exp(2*(A)*dt)-1)/(2*A)*randn*sigma + u_prsbc(i, j)*(exp(A*dt)-1)/A; % zero-hold control
+            x_prsbc(i+1, j) = exp((A)*dt) * x_prsbc(i, j) + randn*sigma + u_prsbc(i, j)*(exp(A*dt)-1)/A; % zero-hold control
         else
-            x_prsbc(i+1, j) = exp((A-K_trap)*dt) * x_prsbc(i, j) + (exp(2*(A-K_trap)*dt)-1)/(2*(A-K_trap))*randn*sigma; % uncontrollable dynamics
+            x_prsbc(i+1, j) = exp((A-K_trap)*dt) * x_prsbc(i, j) + randn*sigma; % uncontrollable dynamics
         end
     end
 end
@@ -205,3 +201,5 @@ xlim([0,100])
 xt = get(gca, 'XTick'); 
 set(gca, 'XTick', xt, 'XTickLabel', xt/10)  
 set(gcf, 'position', [802 545 633 474])
+
+save('nonlinear_worst_case.mat')

@@ -8,8 +8,10 @@ dx = 0.1; % state step size (for derivative calculations)
 eps = 0.1; % epsilon
 K = 2.5; % proportional controller gain
 A = 2; % system dynamics f(x) = A
-sigma = 2; % magnitude of noise
+sigma = 1; % magnitude of noise
 h = 10; % safe prob time horizon
+
+sigma = sigma * sqrt(dt); % discretization
 
 %% Proposed controller
 x = zeros(Nt, traj_num); % initialization
@@ -32,10 +34,10 @@ for j = 1:traj_num
            
             if dP_x*(A-K)*x(i, j) >= -alpha * (P - (1-eps))
                 u(i, j) = -K * x(i, j);
-                x(i+1, j) = exp((A-K)*dt) * x(i, j) + (exp(2*(A-K)*dt)-1)/(2*(A-K))*randn*sigma; % nominal controller
+                x(i+1, j) = exp((A-K)*dt) * x(i, j) + randn*sigma; % nominal controller
             else
                 u(i, j) = (-alpha * (P - (1-eps))) / dP_x - A*x(i, j);
-                x(i+1, j) = exp((A)*dt) * x(i, j) + (exp(2*(A)*dt)-1)/(2*A)*randn*sigma + u(i, j)*(exp(A*dt)-1)/A; % zero-hold control
+                x(i+1, j) = exp((A)*dt) * x(i, j) + randn*sigma + u(i, j)*(exp(A*dt)-1)/A; % zero-hold control
             end
         end   
     end
@@ -53,7 +55,7 @@ F_r = zeros(Nt, 1); % to store expected value of safe probability
 for j = 1:traj_num
     for i = 1:Nt
         u_r(i, j) = -K*x_r(i, j);
-        x_r(i+1, j) = exp((A-K)*dt) * x_r(i, j) + (exp(2*(A-K)*dt)-1)/(2*(A-K))*randn*sigma; % nominal controller
+        x_r(i+1, j) = exp((A-K)*dt) * x_r(i, j) + randn*sigma; % nominal controller
     end
 end
 
@@ -73,14 +75,14 @@ for j = 1:traj_num
         P = mc_safe_prob(x_clark(i, j), h, sigma);
         if P > 1 - eps
             u_clark = -K*x_clark(i, j);
-            x_clark(i+1, j) = exp((A-K)*dt) * x_clark(i, j) + (exp(2*(A-K)*dt)-1)/(2*(A-K))*randn*sigma; % nominal controller
+            x_clark(i+1, j) = exp((A-K)*dt) * x_clark(i, j) + randn*sigma; % nominal controller
         else
             if exp((A-K)*dt) * x_clark(i, j) - x_clark(i, j) >= -alpha * dt * (x_clark(i, j)-1)
                 u_clark = -K*x_clark(i, j);
-                x_clark(i+1, j) = exp((A-K)*dt) * x_clark(i, j) + (exp(2*(A-K)*dt)-1)/(2*(A-K))*randn*sigma; % nominal controller
+                x_clark(i+1, j) = exp((A-K)*dt) * x_clark(i, j) + randn*sigma; % nominal controller
             else
                 u_clark(i, j) = ((-alpha*dt + 1 - exp(A*dt)) * x_clark(i, j) + alpha*dt) * A / (exp(A*dt)-1);
-                x_clark(i+1, j) = exp((A)*dt) * x_clark(i, j) + (exp(2*(A)*dt)-1)/(2*A)*randn*sigma + u_clark(i, j)*(exp(A*dt)-1)/A; % zero-hold control
+                x_clark(i+1, j) = exp((A)*dt) * x_clark(i, j) + randn*sigma + u_clark(i, j)*(exp(A*dt)-1)/A; % zero-hold control
             end
         end
     end
@@ -107,14 +109,14 @@ for j = 1:traj_num
         P = mc_safe_prob(x_cvar(i, j), h, sigma);
         if P > 1 - eps
             u_cvar(i, j) = -K*x_cvar(i, j);
-            x_cvar(i+1, j) = exp((A-K)*dt) * x_cvar(i, j) + (exp(2*(A-K)*dt)-1)/(2*(A-K))*randn*sigma; % nominal controller
+            x_cvar(i+1, j) = exp((A-K)*dt) * x_cvar(i, j) + randn*sigma; % nominal controller
         else
             if exp((A-K)*dt) * x_cvar(i, j) + l_risk >= alpha_risk * x_cvar(i, j)
                 u_cvar(i, j) = -K*x_cvar(i, j);
-                x_cvar(i+1, j) = exp((A-K)*dt) * x_cvar(i, j) + (exp(2*(A-K)*dt)-1)/(2*(A-K))*randn*sigma; % nominal controller
+                x_cvar(i+1, j) = exp((A-K)*dt) * x_cvar(i, j) + randn*sigma; % nominal controller
             else
                 u_cvar(i, j) = ((alpha_risk - exp((A)*dt)) * x_cvar(i, j) - l_risk) * A / (exp(A*dt)-1);
-                x_cvar(i+1, j) = exp((A)*dt) * x_cvar(i, j) + (exp(2*(A)*dt)-1)/(2*A)*randn*sigma + u_cvar(i, j)*(exp(A*dt)-1)/A; % zero-hold control
+                x_cvar(i+1, j) = exp((A)*dt) * x_cvar(i, j) + randn*sigma + u_cvar(i, j)*(exp(A*dt)-1)/A; % zero-hold control
             end
         end
     end
@@ -139,14 +141,14 @@ for j = 1:traj_num
         P = mc_safe_prob(x_prsbc(i, j), h, sigma);
         if P > 1 - eps
             u_prsbc(i, j) = -K*x_prsbc(i, j);
-            x_prsbc(i+1, j) = exp((A-K)*dt) * x_prsbc(i, j) + (exp(2*(A-K)*dt)-1)/(2*(A-K))*randn*sigma; % nominal controller
+            x_prsbc(i+1, j) = exp((A-K)*dt) * x_prsbc(i, j) + randn*sigma; % nominal controller
         else
             if exp((A-K)*dt) * x_prsbc(i, j) - x_prsbc(i, j) >= (- alpha_risk * x_prsbc(i, j) - l_risk + alpha_risk) * dt
                 u_prsbc(i, j) = -K*x_prsbc(i, j);
-                x_prsbc(i+1, j) = exp((A-K)*dt) * x_prsbc(i, j) + (exp(2*(A-K)*dt)-1)/(2*(A-K))*randn*sigma; % nominal controller
+                x_prsbc(i+1, j) = exp((A-K)*dt) * x_prsbc(i, j) + randn*sigma; % nominal controller
             else
                 u_prsbc(i, j) = ((- alpha_risk * x_prsbc(i, j) - l_risk + alpha_risk) * dt + x_prsbc(i, j) - exp((A)*dt) * x_prsbc(i, j)) * A / (exp(A*dt)-1);
-                x_prsbc(i+1, j) = exp((A)*dt) * x_prsbc(i, j) + (exp(2*(A)*dt)-1)/(2*A)*randn*sigma + u_prsbc(i, j)*(exp(A*dt)-1)/A; % zero-hold control
+                x_prsbc(i+1, j) = exp((A)*dt) * x_prsbc(i, j) + randn*sigma + u_prsbc(i, j)*(exp(A*dt)-1)/A; % zero-hold control
             end
         end
     end

@@ -8,9 +8,11 @@ dx = 0.1; % state step size (for derivative calculations)
 eps = 0.1; % epsilon
 K = 2.5; % proportional controller gain
 A = 2; % A matrix in system dynamics
-sigma = 2; % magnitude of noise
+sigma = 1; % magnitude of noise
 h = 10; % safe prob time horizon
 x_0 = 3; % initial state
+
+sigma = sigma * sqrt(dt); % discretization
 
 %% Proposed controller
 x = zeros(Nt, traj_num); % initialization
@@ -29,7 +31,7 @@ for j = 1:traj_num
             dP_x = 0.05;
         end
         u = (-alpha * (P - (1-eps))) / dP_x - A*x(i, j);
-        x(i+1, j) = exp((A)*dt) * x(i, j) + (exp(2*(A)*dt)-1)/(2*A)*randn*sigma + u*(exp(A*dt)-1)/A; % zero-hold control
+        x(i+1, j) = exp((A)*dt) * x(i, j) + u*(exp(A*dt)-1)/A + randn*sigma;
     end
 end
 x_ave = mean(x, 2);
@@ -42,7 +44,7 @@ F_r = zeros(Nt, 1); % to store expected value of safe probability
 
 for j = 1:traj_num
     for i = 1:Nt
-        x_r(i+1, j) = exp((A-K)*dt) * x_r(i, j) + (exp(2*(A-K)*dt)-1)/(2*(A-K))*randn*sigma; % nominal controller
+        x_r(i+1, j) = exp((A-K)*dt) * x_r(i, j) + randn*sigma; % nominal controller
     end
 end
 
@@ -59,7 +61,7 @@ alpha = 1;
 for j = 1:traj_num
     for i = 1:Nt
         u = ((-alpha*dt + 1 - exp(A*dt)) * x_clark(i, j) + alpha*dt) * A / (exp(A*dt)-1);
-        x_clark(i+1, j) = exp((A)*dt) * x_clark(i, j) + (exp(2*(A)*dt)-1)/(2*A)*randn*sigma + u*(exp(A*dt)-1)/A; % zero-hold control
+        x_clark(i+1, j) = exp((A)*dt) * x_clark(i, j) + randn*sigma + u*(exp(A*dt)-1)/A; % zero-hold control
     end
 end
 
@@ -82,7 +84,7 @@ l_risk = quadgk(@(x) x.*normpdf(x, 0, sigma_risk), -inf, epsilon)/normcdf(epsilo
 for j = 1:traj_num
     for i = 1:Nt
         u_cvar(i, j) = ((alpha_risk - exp((A)*dt)) * x_cvar(i, j) - l_risk) * A / (exp(A*dt)-1);
-        x_cvar(i+1, j) = exp((A)*dt) * x_cvar(i, j) + (exp(2*(A)*dt)-1)/(2*A)*randn*sigma + u_cvar(i, j)*(exp(A*dt)-1)/A; % zero-hold control
+        x_cvar(i+1, j) = exp((A)*dt) * x_cvar(i, j) + randn*sigma + u_cvar(i, j)*(exp(A*dt)-1)/A; % zero-hold control
     end
 end
 
@@ -103,7 +105,7 @@ l_risk = norminv(1-epsilon, 0, sigma_risk);
 for j = 1:traj_num
     for i = 1:Nt
         u_prsbc(i, j) = ((- alpha_risk * x_prsbc(i, j) - l_risk + alpha_risk) * dt + x_prsbc(i, j) - exp((A)*dt) * x_prsbc(i, j)) * A / (exp(A*dt)-1);
-        x_prsbc(i+1, j) = exp((A)*dt) * x_prsbc(i, j) + (exp(2*(A)*dt)-1)/(2*A)*randn*sigma + u_prsbc(i, j)*(exp(A*dt)-1)/A; % zero-hold control
+        x_prsbc(i+1, j) = exp((A)*dt) * x_prsbc(i, j) + randn*sigma + u_prsbc(i, j)*(exp(A*dt)-1)/A; % zero-hold control
     end
 end
 
