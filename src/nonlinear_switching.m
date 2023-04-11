@@ -25,23 +25,17 @@ for j = 1:traj_num
     for i = 1:Nt
         P = mc_safe_prob_nonlinear(x(i, j), h, sigma);
         if x(i, j) > bnd
-            if P > 1 - eps
+            P_dx1 = mc_safe_prob_nonlinear(x(i, j)+dx, h, sigma);
+            P_dx2 = mc_safe_prob_nonlinear(x(i, j)-dx, h, sigma);
+            dP_x = (P_dx1 - P_dx2) / (2*dx); % gradient
+           
+            if dP_x*(A-K)*x(i, j) >= -alpha * (P - (1-eps))
                 u(i, j) = -K * x(i, j);
                 x(i+1, j) = exp((A-K)*dt) * x(i, j) + randn*sigma; % nominal controller
             else
-                P_dx1 = mc_safe_prob_nonlinear(x(i, j)+dx, h, sigma);
-                P_dx2 = mc_safe_prob_nonlinear(x(i, j)-dx, h, sigma);
-                dP_x = (P_dx1 - P_dx2) / (2*dx); % gradient
-               
-                if dP_x*(A-K)*x(i, j) >= -alpha * (P - (1-eps))
-                    u(i, j) = -K * x(i, j);
-                    x(i+1, j) = exp((A-K)*dt) * x(i, j) + randn*sigma; % nominal controller
-                else
-    %                 u(i, j) = 1/dP_x-A*x(i, j);
-                    u(i, j) = (-alpha * (P - (1-eps))) / dP_x - A*x(i, j);
-                    x(i+1, j) = exp((A)*dt) * x(i, j) + randn*sigma + u(i, j)*(exp(A*dt)-1)/A; % zero-hold control
-                end
-            end   
+                u(i, j) = (-alpha * (P - (1-eps))) / dP_x - A*x(i, j);
+                x(i+1, j) = exp((A)*dt) * x(i, j) + randn*sigma + u(i, j)*(exp(A*dt)-1)/A; % zero-hold control
+            end
         else
             x(i+1, j) = exp((A-K_trap)*dt) * x(i, j) + randn*sigma; % uncontrollable dynamics
         end
