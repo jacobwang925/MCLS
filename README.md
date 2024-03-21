@@ -16,6 +16,8 @@ For worst case control, run `worst_case.m`.
 
 For nonlinear system setting, run `nonlinear_swiching.m` and `nonlinear_worst_case.m`.
 
+For probabilistic safety certificate for RL, see [Policy Gradient](https://colab.research.google.com/drive/17tWsnQ4YerIJK1OWMM3z4wpx1uTHeH9a#scrollTo=SLGc9BvZwUFX) and [Q-learning](https://colab.research.google.com/drive/1ts6PVN3c94Q_9xlehk6OWhJEta64Ka4E#scrollTo=Hqb4naXbsfpt) on Google Colab.
+
 
 
 ## Citation
