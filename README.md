@@ -10,11 +10,13 @@ The repository constains an implementation of the paper "Myopically Verifiable P
 
 ## How to run
 
-For switching control, run `swiching.m`.
+For switching control, run `switching.m`.
 
 For worst case control, run `worst_case.m`.
 
 For nonlinear system setting, run `nonlinear_swiching.m` and `nonlinear_worst_case.m`.
+
+For 3D switching control of a stable system, run `switching_3d.m`.
 
 For path integral importance sampling, run `path_integral.m`.
 
