@@ -14,7 +14,8 @@ h = 10; % safe prob time horizon
 sigma = sigma * sqrt(dt); % discretization
 
 % Multiple alpha values
-alpha_values = [1, 1.2, 1.5, 2];
+% alpha_values = [1, 1.2, 1.5, 2];
+alpha_values = [0.8, 0.9, 1, 1.1, 1.2];
 
 % Arrays to store results: (#alpha_values, Nt+1, traj_num)
 x_all = zeros(length(alpha_values), Nt+1, traj_num);
@@ -63,13 +64,12 @@ yline(1, 'LineStyle', '--', 'color', 'red', 'LineWidth', 1.5)
 
 ylim([0, 5])
 
-% Legend entries using \alpha
-legend_entries = arrayfun(@(x) ['\alpha = ' num2str(x)], alpha_values, 'UniformOutput', false);
-legend(hlines, legend_entries{:}, 'Location', 'best')
+% Legend entries using LaTeX for alpha
+legend_entries = arrayfun(@(x) ['$\alpha(h) = ' num2str(x) 'h$'], alpha_values, 'UniformOutput', false);
+legend(hlines, legend_entries{:}, 'Location', 'best', 'Interpreter', 'latex')
 
 set(gca, 'FontSize', 25)
 xlabel('Time')
-% ylabel(['Averaged state over ' num2str(traj_num) ' trajectories'])
 ylabel(['Averaged state'])
 xlim([0, Nt])
 xt = get(gca, 'XTick'); 
@@ -101,7 +101,9 @@ end
 
 ylim([0, 1])
 
-legend(legend_entries{:}, 'Location', 'best')
+% Reuse the same legend_entries for the second figure
+legend(legend_entries{:}, 'Location', 'best', 'Interpreter', 'latex')
+
 set(gca, 'FontSize', 25)
 xlabel('Time')
 ylabel('Empirical safe probability')
