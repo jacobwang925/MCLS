@@ -4,7 +4,15 @@
 
 ## Description
 
-The repository constains an implementation of the paper "Myopically Verifiable Probabilistic Certificate for Long-term Safety" at the 2022 American Control Conference.
+This repository contains an implementation of the paper **“Myopically Verifiable Probabilistic Certificates for Safe Control and Learning”** published in *IEEE Transactions on Automatic Control (TAC)*.
+
+A shorter version of this work, **“Myopically Verifiable Probabilistic Certificates for Long-Term Safety”** appeared at the *2022 American Control Conference (ACC)*.
+
+
+
+![diagram](plots/diagram.png)
+
+![results](plots/results.png)
 
 
 
@@ -29,6 +37,13 @@ For probabilistic safety certificate for RL, see [Policy Gradient](https://colab
 ## Citation
 
 ```biblitex
+@article{wang2024myopically,
+  title={Myopically verifiable probabilistic certificates for safe control and learning},
+  author={Wang, Zhuoyuan and Jing, Haoming and Kurniawan, Christian and Chern, Albert and Nakahira, Yorie},
+  journal={arXiv preprint arXiv:2404.16883},
+  year={2024}
+}
+
 @inproceedings{wang2022myopically,
   title={Myopically verifiable probabilistic certificate for long-term safety},
   author={Wang, Zhuoyuan and Jing, Haoming and Kurniawan, Christian and Chern, Albert and Nakahira, Yorie},
