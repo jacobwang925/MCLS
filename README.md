@@ -37,11 +37,12 @@ For probabilistic safety certificate for RL, see [Policy Gradient](https://colab
 ## Citation
 
 ```biblitex
-@article{wang2024myopically,
+@article{wang2026myopically,
   title={Myopically verifiable probabilistic certificates for safe control and learning},
   author={Wang, Zhuoyuan and Jing, Haoming and Kurniawan, Christian and Chern, Albert and Nakahira, Yorie},
-  journal={arXiv preprint arXiv:2404.16883},
-  year={2024}
+  journal={IEEE Transactions on Automatic Control},
+  year={2026},
+  publisher={IEEE}
 }
 
 @inproceedings{wang2022myopically,
